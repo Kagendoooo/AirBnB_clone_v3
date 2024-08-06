@@ -23,7 +23,7 @@ def teardown_db(exception):
 @app.errorhandler(404)
 def error_404(error):
     """JSON 404 erro"""
-    return jsonify({"error": "Not found"}), 404
+    return jsonify(error='Not found'), 404
 
 
 if __name__ == "__main__":
