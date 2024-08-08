@@ -9,6 +9,7 @@ from models import storage
 from api.v1.views import app_views
 
 app = Flask(__name__)
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 app.register_blueprint(app_views)
 
 
@@ -23,7 +24,9 @@ def teardown_db(exception):
 @app.errorhandler(404)
 def error_404(error):
     """JSON 404 erro"""
-    return jsonify(error='Not found'), 404
+    res = jsonify({"error": "Not found"})
+    res.status_code = 404
+    return res
 
 
 if __name__ == "__main__":
