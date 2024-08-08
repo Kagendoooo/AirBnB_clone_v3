@@ -1,4 +1,4 @@
-#!usr/bin/python3
+#!/usr/bin/python3
 """
 Create new view for State objects
 Handles all default RESTFul API actions
