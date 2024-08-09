@@ -99,6 +99,6 @@ def update_review(review_id):
     data = request.get_json()
     for key, value in data.items():
         if key not in ignore:
-            setattr(review, key, value)
+            setattr(review_instance, key, value)
     storage.save()
     return make_response(jsonify(review_instance.to_dict()), 200)
