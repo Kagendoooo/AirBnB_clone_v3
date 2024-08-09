@@ -1,99 +1,80 @@
 #!/usr/bin/python3
 """
-new view for Review object
-handles all default RESTFul API actions
+New view for Review object
+Handles all default RESTFul API actions
 """
 
 from models.place import Place
-from models.amenity import Amenity
+from models.review import Review
 from models import storage
 from api.v1.views import app_views
-from os import environ
 from flask import abort, jsonify, make_response, request
 from flasgger.utils import swag_from
 
 
-@app_views.route('places/<place_id>/amenities', methods=['GET'],
+@app_views.route('/places/<place_id>/reviews', methods=['GET'],
                  strict_slashes=False)
-@swag_from('documentation/place_amenity/get_places_amenities.yml',
-           methods=['GET'])
-def get_place_amenities(place_id):
+@swag_from('documentation/place_review/get_place_reviews.yml', methods=['GET'])
+def get_place_reviews(place_id):
     """
-    Retrieves the list of all Amenity objects of a Place
+    Retrieves the list of all Review objects of a Place
     """
     place = storage.get(Place, place_id)
-
     if not place:
-        abort(404)
+        abort(404, description="Place not found")
 
-    if environ.get('HBNB_TYPE_STORAGE') == "db":
-        amenities = [amenity.to_dict() for amenity in place.amenities]
-    else:
-        amenities = [storage.get(Amenity, amenity_id).to_dict()
-                     for amenity_id in place.amenity_ids]
-
-    return jsonify(amenities)
+    reviews = [review.to_dict() for review in place.reviews]
+    return jsonify(reviews)
 
 
-@app_views.route('/places/<place_id>/amenities/<amenity_id>',
+@app_views.route('/places/<place_id>/reviews/<review_id>',
                  methods=['DELETE'], strict_slashes=False)
-@swag_from('documentation/place_amenity/delete_place_amenities.yml',
+@swag_from('documentation/place_review/delete_place_review.yml',
            methods=['DELETE'])
-def delete_place_amenity(place_id, amenity_id):
+def delete_place_review(place_id, review_id):
     """
-    Deletes a Amenity object of a Place
+    Deletes a Review object from a Place
     """
     place = storage.get(Place, place_id)
-
     if not place:
-        abort(404)
+        abort(404, description="Place not found")
 
-    amenity = storage.get(Amenity, amenity_id)
+    review = storage.get(Review, review_id)
+    if not review:
+        abort(404, description="Review not found")
 
-    if not amenity:
-        abort(404)
-
-    if environ.get('HBNB_TYPE_STORAGE') == "db":
-        if amenity not in place.amenities:
-            abort(404)
-        place.amenities.remove(amenity)
-    else:
-        if amenity_id not in place.amenity_ids:
-            abort(404)
-        place.amenity_ids.remove(amenity_id)
-
+    storage.delete(review)
     storage.save()
     return make_response(jsonify({}), 200)
 
 
-@app_views.route('/places/<place_id>/amenities/<amenity_id>', methods=['POST'],
+@app_views.route('/places/<place_id>/reviews', methods=['POST'],
                  strict_slashes=False)
-@swag_from('documentation/place_amenity/post_place_amenities.yml',
+@swag_from('documentation/place_review/post_place_review.yml',
            methods=['POST'])
-def link_place_amenity(place_id, amenity_id):
+def post_place_review(place_id):
     """
-    Link a Amenity object to a Place
+    Creates a new Review for a Place
     """
     place = storage.get(Place, place_id)
-
     if not place:
-        abort(404)
+        abort(404, description="Place not found")
 
-    amenity = storage.get(Amenity, amenity_id)
+    if not request.is_json:
+        abort(400, description="Not a JSON")
 
-    if not amenity:
-        abort(404)
+    req_data = request.get_json()
 
-    if environ.get('HBNB_TYPE_STORAGE') == "db":
-        if amenity in place.amenities:
-            return make_response(jsonify(amenity.to_dict()), 200)
-        else:
-            place.amenities.append(amenity)
-    else:
-        if amenity_id in place.amenity_ids:
-            return make_response(jsonify(amenity.to_dict()), 200)
-        else:
-            place.amenity_ids.append(amenity_id)
+    if 'user_id' not in req_data:
+        abort(400, description="Missing user_id")
+    if 'text' not in req_data:
+        abort(400, description="Missing text")
 
-    storage.save()
-    return make_response(jsonify(amenity.to_dict()), 201)
+    user = storage.get(User, req_data['user_id'])
+    if not user:
+        abort(404, description="User not found")
+
+    req_data['place_id'] = place_id
+    review = Review(**req_data)
+    review.save()
+    return make_response(jsonify(review.to_dict()), 201)
