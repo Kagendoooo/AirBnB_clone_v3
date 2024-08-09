@@ -9,12 +9,16 @@ from flasgger.utils import swag_from
 
 @app_views.route('/users', methods=['GET'], strict_slashes=False)
 @swag_from('documentation/user/all_users.yml')
-def get_user(user_id):
-    """Retrieve a User object"""
-    user_instance = storage.get(User, user_id)
-    if not user_instance:
-        abort(404)
-    return jsonify(user_instance.to_dict())
+def get_users():
+    """
+    Retrieves the list of all user objects
+    or a specific user
+    """
+    all_users = storage.all(User).values()
+    list_users = []
+    for user in all_users:
+        list_users.append(user.to_dict())
+    return jsonify(list_users)
 
 
 @app_views.route('/users/<user_id>', methods=['GET'], strict_slashes=False)
