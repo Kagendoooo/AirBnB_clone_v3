@@ -101,4 +101,5 @@ def update_review(review_id):
         if key not in ignore:
             setattr(review_instance, key, value)
     storage.save()
-    return make_response(jsonify(review_instance.to_dict()), 200)
+    return jsonify(review_instance.to_dict()), 200
+
