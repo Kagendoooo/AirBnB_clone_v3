@@ -67,7 +67,7 @@ def delete_place(place_id):
 @app_views.route('/cities/<city_id>/places', methods=['POST'],
                  strict_slashes=False)
 @swag_from('documentation/place/post_place.yml', methods=['POST'])
-def post_place(city_id):
+def create_place(city_id):
     """
     Creates a Place
     """
@@ -99,7 +99,7 @@ def post_place(city_id):
 
 @app_views.route('/places/<place_id>', methods=['PUT'], strict_slashes=False)
 @swag_from('documentation/place/put_place.yml', methods=['PUT'])
-def put_place(place_id):
+def update_place(place_id):
     """
     Updates a Place
     """

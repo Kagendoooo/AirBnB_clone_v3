@@ -57,7 +57,7 @@ def delete_amenity(amenity_id):
 
 @app_views.route('/amenities', methods=['POST'], strict_slashes=False)
 @swag_from('documentation/amenity/post_amenity.yml', methods=['POST'])
-def post_amenity():
+def create_amenity():
     """
     Creates an amenity
     """
@@ -76,7 +76,7 @@ def post_amenity():
 @app_views.route('/amenities/<amenity_id>', methods=['PUT'],
                  strict_slashes=False)
 @swag_from('documentation/amenity/put_amenity.yml', methods=['PUT'])
-def put_amenity(amenity_id):
+def update_amenity(amenity_id):
     """
     Updates an amenity
     """
