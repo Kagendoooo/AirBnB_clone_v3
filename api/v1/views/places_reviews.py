@@ -53,7 +53,7 @@ def delete_place_review(place_id, review_id):
                  strict_slashes=False)
 @swag_from('documentation/place_review/post_place_review.yml',
            methods=['POST'])
-def post_place_review(place_id):
+def create_review(place_id):
     """
     Creates a new Review for a Place
     """
@@ -79,3 +79,26 @@ def post_place_review(place_id):
     review = Review(**req_data)
     review.save()
     return make_response(jsonify(review.to_dict()), 201)
+
+@app_views.route('/reviews/<review_id>', methods=['PUT'], strict_slashes=False)
+@swag_from('documentation/reviews/put_reviews.yml', methods=['PUT'])
+def update_review(review_id):
+    """
+    Updates a Review
+    """
+    review_instance = storage.get(Review, review_id)
+
+    if not review_instance:
+        abort(404)
+
+    if not request.get_json():
+        abort(400, description="Not a JSON")
+
+    ignore = ['id', 'user_id', 'place_id', 'created_at', 'updated_at']
+
+    data = request.get_json()
+    for key, value in data.items():
+        if key not in ignore:
+            setattr(review, key, value)
+    storage.save()
+    return make_response(jsonify(review_instance.to_dict()), 200)
